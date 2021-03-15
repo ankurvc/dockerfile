@@ -1,0 +1,67 @@
+FROM php:7.3-apache-stretch
+
+MAINTAINER Sahil Darji<sahil.darji@viitor.cloud>
+
+#Add apt packages dependencies for PHP extensions
+RUN apt-get update && apt-get install -y \
+    libmagickwand-dev \
+    libxml2-dev \
+        sendmail \
+    libpng-dev \
+    zlib1g-dev \
+    libgmp-dev \
+    libc-client-dev \
+    libkrb5-dev \
+    zlib1g-dev \
+    libicu-dev \
+    g++ \
+    libpq-dev \
+    libzip-dev \
+    libxslt-dev \
+    libjpeg62-turbo-dev \
+    pkg-config \
+    patch \
+    libpng-dev \
+    libfreetype6-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+#Install IGBINARY from source
+ENV EXT_IGBINARY_VERSION=3.0.1
+RUN docker-php-source extract && \
+    mkdir -p /usr/src/php/ext/igbinary && \
+    curl -fsSL https://github.com/igbinary/igbinary/archive/$EXT_IGBINARY_VERSION.tar.gz | tar xvz -C /usr/src/php/ext/igbinary --strip 1
+
+#Enable extensions
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
+
+#gd setup for jpeg
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+
+RUN docker-php-ext-install \
+    exif \
+    gd \
+    gettext \
+    gmp \
+    imap \
+    intl \
+    bcmath \
+    calendar \
+    dba \
+    mysqli \
+    pcntl \
+    pdo_mysql \
+    pdo_pgsql \
+    pgsql \
+    shmop \
+    soap \
+    sockets \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    wddx \
+    zip \
+    igbinary \
+    xsl \
+    opcache
+
+RUN a2enmod rewrite negotiation
